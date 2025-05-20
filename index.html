@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Vintage Coquette Photobooth</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div class="container">
+    <h1>Vintage Coquette Photobooth</h1>
+    <div class="main-area">
+      <div class="camera-section">
+        <video id="video" autoplay></video>
+        <div class="controls">
+          <button id="toggleFilter">Toggle Black & White</button>
+          <button id="takePhoto">Take Photo</button>
+        </div>
+        <div id="review" class="hidden">
+          <canvas id="canvas" width="320" height="240"></canvas>
+          <div class="review-buttons">
+            <button id="retake">Retake</button>
+            <button id="usePhoto">Use Photo</button>
+          </div>
+        </div>
+        <p class="instruction">You can take up to 4 photos to complete your strip.</p>
+      </div>
+      <div class="strip-section">
+        <h2>Photo Strip</h2>
+        <div id="photoStrip"></div>
+        <button id="downloadStrip">Download Strip</button>
+      </div>
+    </div>
+  </div>
+  <script src="js/script.js"></script>
+</body>
+</html>
