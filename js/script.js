@@ -1,77 +1,152 @@
-let video = document.getElementById('video');
-let canvas = document.getElementById('canvas');
-let context = canvas.getContext('2d');
-let review = document.getElementById('review');
-let photoStrip = document.getElementById('photoStrip');
-let takePhotoBtn = document.getElementById('takePhoto');
-let retakeBtn = document.getElementById('retake');
-let usePhotoBtn = document.getElementById('usePhoto');
-let toggleFilterBtn = document.getElementById('toggleFilter');
-let downloadStripBtn = document.getElementById('downloadStrip');
-let useBWFilter = false;
-let photoCount = 0;
-const maxPhotos = 4;
-const photos = [];
+const video = document.querySelector("video");
+const canvas = document.querySelector("canvas");
+const ctx = canvas.getContext("2d");
+const takePhotoBtn = document.getElementById("capture");
+const toggleFilterBtn = document.getElementById("toggleFilter");
+const stripContainer = document.getElementById("strip");
+const downloadBtn = document.getElementById("download");
+const restartBtn = document.getElementById("restart");
+const countdown = document.getElementById("countdown");
 
+let photosTaken = 0;
+let photoStrip = [];
+let isBlackAndWhite = false;
+
+// Access the user's webcam
 navigator.mediaDevices.getUserMedia({ video: true })
   .then(stream => {
     video.srcObject = stream;
   })
   .catch(err => {
-    alert('Camera access denied or not available.');
+    alert("Camera access denied or not available. Please allow camera access in your browser settings.");
+    console.error(err);
   });
 
-toggleFilterBtn.addEventListener('click', () => {
-  useBWFilter = !useBWFilter;
-  video.style.filter = useBWFilter ? 'grayscale(100%)' : 'none';
-});
-
-takePhotoBtn.addEventListener('click', () => {
-  context.drawImage(video, 0, 0, canvas.width, canvas.height);
-  if (useBWFilter) {
-    let imageData = context.getImageData(0, 0, canvas.width, canvas.height);
-    let data = imageData.data;
-    for (let i = 0; i < data.length; i += 4) {
-      let avg = (data[i] + data[i + 1] + data[i + 2]) / 3;
-      data[i] = data[i + 1] = data[i + 2] = avg;
+// Start countdown
+function startCountdown(callback) {
+  let timeLeft = 3;
+  countdown.innerText = timeLeft;
+  const timer = setInterval(() => {
+    timeLeft--;
+    if (timeLeft > 0) {
+      countdown.innerText = timeLeft;
+    } else {
+      clearInterval(timer);
+      countdown.innerText = "";
+      callback();
     }
-    context.putImageData(imageData, 0, 0);
+  }, 1000);
+}
+
+// Capture photo from video
+function capturePhoto() {
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+
+  if (isBlackAndWhite) {
+    ctx.filter = "grayscale(100%)";
+  } else {
+    ctx.filter = "none";
   }
-  review.classList.remove('hidden');
-});
 
-retakeBtn.addEventListener('click', () => {
-  review.classList.add('hidden');
-});
+  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+  showReviewOptions();
+}
 
-usePhotoBtn.addEventListener('click', () => {
-  if (photoCount < maxPhotos) {
-    let img = document.createElement('img');
-    img.src = canvas.toDataURL('image/png');
-    photoStrip.appendChild(img);
-    photos.push(canvas.toDataURL('image/png'));
-    photoCount++;
-    review.classList.add('hidden');
+// Show "Use" and "Retake" options
+function showReviewOptions() {
+  takePhotoBtn.style.display = "none";
+
+  const useBtn = document.createElement("button");
+  useBtn.textContent = "Use";
+  useBtn.className = "action-btn";
+  useBtn.onclick = () => {
+    addToStrip(canvas.toDataURL("image/png"));
+    resetButtons();
+  };
+
+  const retakeBtn = document.createElement("button");
+  retakeBtn.textContent = "Retake";
+  retakeBtn.className = "action-btn";
+  retakeBtn.onclick = () => {
+    resetButtons();
+  };
+
+  document.querySelector(".controls").appendChild(useBtn);
+  document.querySelector(".controls").appendChild(retakeBtn);
+}
+
+// Reset to initial photo capture state
+function resetButtons() {
+  document.querySelectorAll(".action-btn").forEach(btn => btn.remove());
+  takePhotoBtn.style.display = "inline-block";
+}
+
+// Add photo to strip
+function addToStrip(dataURL) {
+  if (photosTaken >= 4) return;
+
+  const img = document.createElement("img");
+  img.src = dataURL;
+  img.className = "strip-photo";
+  stripContainer.appendChild(img);
+  photoStrip.push(dataURL);
+  photosTaken++;
+
+  if (photosTaken === 4) {
+    downloadBtn.style.display = "inline-block";
   }
-});
+}
 
-downloadStripBtn.addEventListener('click', () => {
-  let finalCanvas = document.createElement('canvas');
-  finalCanvas.width = 320;
-  finalCanvas.height = 240 * photoCount;
-  let ctx = finalCanvas.getContext('2d');
+// Download full strip
+function downloadStrip() {
+  const stripCanvas = document.createElement("canvas");
+  const photoWidth = 300;
+  const photoHeight = 225;
+  stripCanvas.width = photoWidth;
+  stripCanvas.height = photoHeight * 4 + 50;
 
-  photos.forEach((src, index) => {
-    let img = new Image();
-    img.src = src;
+  const stripCtx = stripCanvas.getContext("2d");
+
+  photoStrip.forEach((dataURL, i) => {
+    const img = new Image();
+    img.src = dataURL;
     img.onload = () => {
-      ctx.drawImage(img, 0, 240 * index);
-      if (index === photos.length - 1) {
-        let link = document.createElement('a');
-        link.download = 'photostrip.png';
-        link.href = finalCanvas.toDataURL();
+      stripCtx.drawImage(img, 0, i * photoHeight, photoWidth, photoHeight);
+      if (i === 3) {
+        // Add watermark text
+        stripCtx.font = "20px 'Great Vibes', cursive";
+        stripCtx.fillStyle = "#800020"; // Burgundy
+        stripCtx.fillText("Sabby's cam", 80, stripCanvas.height - 15);
+
+        const finalDataURL = stripCanvas.toDataURL("image/png");
+        const link = document.createElement("a");
+        link.href = finalDataURL;
+        link.download = "sabbys_strip.png";
         link.click();
       }
     };
   });
+}
+
+// Reset everything
+function restartPhotobooth() {
+  photosTaken = 0;
+  photoStrip = [];
+  stripContainer.innerHTML = "";
+  downloadBtn.style.display = "none";
+  resetButtons();
+}
+
+// Toggle B&W Filter
+toggleFilterBtn.addEventListener("click", () => {
+  isBlackAndWhite = !isBlackAndWhite;
+  toggleFilterBtn.textContent = isBlackAndWhite ? "Black & White: ON" : "Black & White: OFF";
 });
+
+takePhotoBtn.addEventListener("click", () => {
+  startCountdown(capturePhoto);
+});
+
+downloadBtn.addEventListener("click", downloadStrip);
+restartBtn.addEventListener("click", restartPhotobooth);
