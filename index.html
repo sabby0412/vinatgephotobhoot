@@ -3,35 +3,38 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Vintage Coquette Photobooth</title>
-  <link rel="stylesheet" href="css/style.css" />
+  <title>Sabby's Vintage Photobooth</title>
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Playfair+Display&family=Dancing+Script&display=swap" rel="stylesheet">
 </head>
 <body>
+  <h1 class="vintage-title">Sabby's Vintage Photobooth</h1>
+
   <div class="container">
-    <h1>Vintage Coquette Photobooth</h1>
-    <div class="main-area">
-      <div class="camera-section">
-        <video id="video" autoplay></video>
-        <div class="controls">
-          <button id="toggleFilter">Toggle Black & White</button>
-          <button id="takePhoto">Take Photo</button>
-        </div>
-        <div id="review" class="hidden">
-          <canvas id="canvas" width="320" height="240"></canvas>
-          <div class="review-buttons">
-            <button id="retake">Retake</button>
-            <button id="usePhoto">Use Photo</button>
-          </div>
-        </div>
-        <p class="instruction">You can take up to 4 photos to complete your strip.</p>
+    <div class="left-panel">
+      <video autoplay playsinline id="video"></video>
+
+      <div class="controls">
+        <button id="takePhotoBtn">Take Photo</button>
+        <button id="retakeBtn" style="display: none;">Retake</button>
+        <button id="useBtn" style="display: none;">Use</button>
+        <label class="toggle-container">
+          <input type="checkbox" id="bwToggle" />
+          <span class="toggle-label">Black & White: OFF</span>
+        </label>
       </div>
-      <div class="strip-section">
-        <h2>Photo Strip</h2>
-        <div id="photoStrip"></div>
-        <button id="downloadStrip">Download Strip</button>
-      </div>
+
+      <p class="instructions">You can take 4 photos. Let's create your strip!</p>
+    </div>
+
+    <div class="right-panel">
+      <div class="strip" id="strip"></div>
+      <button id="downloadBtn" style="display: none;">Download Strip</button>
+      <button id="restartBtn" style="display: none;">Restart</button>
     </div>
   </div>
-  <script src="js/script.js"></script>
+
+  <canvas id="canvas" width="400" height="300" style="display:none;"></canvas>
+  <script src="script.js"></script>
 </body>
 </html>
